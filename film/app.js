@@ -14,20 +14,29 @@ class Observable {
   }
 }
 
+function requestFilm(url, params, callback) {
+  fetch(`${BASE_URL}${url}?${SEARCH_PARAMS}&${params}`).then(async response => {
+    if (response.status !== 200) {
+      return;
+    }
+    const data = await response.json();
+    callback(data);
+  });
+}
+
 const API_KEY = "23315c01cb32eba5fcb03d0ad0a1ef43";
-const BASE_URL = "https://api.themoviedb.org/3/";
+const BASE_URL = "https://api.themoviedb.org/3";
+const SEARCH_PARAMS = `api_key=${API_KEY}&language=ru`;
 
 const store = {
   films: new Observable(),
   recommendations: new Observable(),
   similar: new Observable(),
   more: new Observable(),
-  indexParent: new Observable()
 };
 
 function searchFilm(film) {
-  const searchParams = `${BASE_URL}search/movie?api_key=${API_KEY}&language=ru&query=`;
-  fetch(`${searchParams}${film}`).then(async response => {
+  fetch(`${BASE_URL}/search/movie?query=${film}&${SEARCH_PARAMS}`).then(async response => {
     if (response.status !== 200) {
       return;
     }
@@ -76,63 +85,27 @@ document.querySelector(".search-film").addEventListener("click", () => {
       // filmNode.appendChild(divOverview);
 
       const similarBtn = document.createElement("button");
-      similarBtn.setAttribute("data-similar", film.id);
       similarBtn.innerText = "похожие фильмы";
       filmNode.appendChild(similarBtn);
 
       const recommendedBtn = document.createElement("button");
-      recommendedBtn.setAttribute("data-recomend", film.id);
       recommendedBtn.innerText = "рекомендации";
       filmNode.appendChild(recommendedBtn);
 
       const moreBtn = document.createElement("button");
       moreBtn.innerText = "подробнее";
-      moreBtn.setAttribute("data-more", film.id);
       filmNode.appendChild(moreBtn);
 
       similarBtn.addEventListener("click", e => {
-        fetch(
-          `https://api.themoviedb.org/3/movie/${
-            e.target.dataset.similar
-          }/similar?api_key=${API_KEY}&language=ru`
-        ).then(async response => {
-          if (response.status !== 200) {
-            return;
-          }
-          const data = await response.json();
-          console.log(data);
-          store.similar.set(data.results);
-        });
+        requestFilm(`/movie/${film.id}/similar`, undefined, data => store.similar.set(data.results));
       });
 
       moreBtn.addEventListener("click", e => {
-        fetch(
-          `https://api.themoviedb.org/3/movie/${
-            e.target.dataset.more
-          }?api_key=${API_KEY}&language=ru&append_to_response=credits`
-        ).then(async response => {
-          if (response.status !== 200) {
-            return;
-          }
-          const indexParent = e.target.parentNode.dataset.index;
-          store.indexParent.set(indexParent);
-          const data = await response.json();
-          store.more.set(data);
-        });
+        requestFilm(`/movie/${film.id}`, `append_to_response=credits`, data => store.more.set(data));
       });
 
       recommendedBtn.addEventListener("click", e => {
-        fetch(
-          `https://api.themoviedb.org/3/movie/${
-            e.target.dataset.recomend
-          }/recommendations?api_key=${API_KEY}&language=ru`
-        ).then(async response => {
-          if (response.status !== 200) {
-            return;
-          }
-          const data = await response.json();
-          store.recommendations.set(data.results);
-        });
+        requestFilm(`/movie/${film.id}/recommendations`, undefined, data => store.recommendations.set(data.results));
       });
 
       filmListNode.appendChild(filmNode);
