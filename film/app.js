@@ -72,18 +72,6 @@ document.querySelector(".search-film").addEventListener("click", () => {
       );
       filmNode.appendChild(poster);
 
-      // const releaseDate = document.createElement("span");
-      // releaseDate.innerText = film.release_date;
-      // filmNode.appendChild(releaseDate);
-
-      // const rating = document.createElement("span");
-      // rating.innerText = film.vote_average;
-      // filmNode.appendChild(rating);
-
-      // const divOverview = document.createElement("div");
-      // divOverview.innerText = film.overview;
-      // filmNode.appendChild(divOverview);
-
       const similarBtn = document.createElement("button");
       similarBtn.innerText = "похожие фильмы";
       filmNode.appendChild(similarBtn);
